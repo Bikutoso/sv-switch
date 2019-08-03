@@ -15,24 +15,18 @@ class Sv_Switch:
 
         self.services_available = self._get_services(self.PATH_SV)
         self.services_enabled = self._get_services(self.PATH_SERVICE)
-        # Check if there are servives that don't boot on startup
-        if os.path.isdir(self.PATH_SERVICE + "down/"):
-            self.services_enabled_down = self._get_services(self.PATH_SERVICE + "down/")
-        else:
-            self.services_enabled_down = []
 
 
     def _get_services(self, path):
         """Returns a list of directories (that are services) in a chosen path."""
         services = []
         for directory in os.listdir(path):
-            if os.path.isdir(path + directory) and not directory == "down": # Do not include the folder 'down'
+            if os.path.isdir(path + directory):
                 services.append(directory)
         return services
 
     def enable_service(self, service):
-        if service not in self.services_enabled and service not in self.services_enabled_down \
-           and service in self.services_available:
+        if service not in self.services_enabled and service in self.services_available:
             os.symlink(self.PATH_SV + service, self.PATH_SERVICE + service, True)
             logging.debug(f"{service} enabled.")
         else:
@@ -44,9 +38,6 @@ class Sv_Switch:
         if service in self.services_enabled:
             os.unlink(self.PATH_SERVICE + service)
             logging.debug(f"{service} disabled.")
-        elif service in self.services_enabled_down:
-            os.unlink(self.PATH_SERVICE + "down/" + service)
-            logging.debug(f"down/{service} disabled.")
         else:
             # Service not enabled
             logging.warning(f"Service {service} already Disabled")
