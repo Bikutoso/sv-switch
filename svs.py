@@ -9,8 +9,8 @@ class Sv_Switch:
     #PATH_SV = "/etc/sv/"
     #PATH_SERVICE = "/var/service/"
     # Example Services
-    PATH_SV = "/tmp/sv/"
-    PATH_SERVICE = "/tmp/service/"
+    PATH_SV = "/tmp/svs/sv/"
+    PATH_SERVICE = "/tmp/svs/service/"
 
     def __init__(self):
 
