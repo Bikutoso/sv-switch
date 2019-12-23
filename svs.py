@@ -8,6 +8,7 @@ import logging
 class Sv_Switch:
     #PATH_SV = "/etc/sv/"
     #PATH_SERVICE = "/var/service/"
+    # Example Services
     PATH_SV = "/tmp/sv/"
     PATH_SERVICE = "/tmp/service/"
 
@@ -25,50 +26,54 @@ class Sv_Switch:
                 services.append(directory)
         return services
 
-    def enable_service(self, service):
-        if service not in self.services_enabled and service in self.services_available:
-            os.symlink(self.PATH_SV + service, self.PATH_SERVICE + service, True)
-            logging.debug(f"{service} enabled.")
+    def enable_service(self, args):
+        if args.service not in self.services_enabled and args.service in self.services_available:
+            os.symlink(self.PATH_SV + args.service, self.PATH_SERVICE + args.service, True)
+            logging.debug(f"{args.service} enabled.")
         else:
             # Service already exists
-            logging.warning(f"Service {service} already Enabled!")
+            logging.warning(f"Service {args.service} already Enabled!")
 
 
-    def disable_service(self, service):
-        if service in self.services_enabled:
-            os.unlink(self.PATH_SERVICE + service)
-            logging.debug(f"{service} disabled.")
+    def disable_service(self, args):
+        if args.service in self.services_enabled:
+            os.unlink(self.PATH_SERVICE + args.service)
+            logging.debug(f"{args.service} disabled.")
         else:
             # Service not enabled
-            logging.warning(f"Service {service} already Disabled")
+            logging.warning(f"Service {args.service} already Disabled")
 
-    def list_services(self):
-        pass
+    def list_services(self, args):
+        print(f"Enabled:   {sorted(self.services_enabled)}")
+        print(f"Available: {sorted(self.services_available)}")
 
-def main(args):
+def main():
     svs = Sv_Switch()
 
-
-    # Move to correct action
-    if f"{args.action}".lower() == "enable":
-        svs.enable_service(args.service)
-    elif f"{args.action}".lower() == "disable":
-        svs.disable_service(args.service)
-    elif f"{args.action}".lower() == "list":
-        svs.list_services()
-
-
-if __name__ == "__main__":
     # Argparse Parsing
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", help="[List, Enable, Disable]")
-    parser.add_argument("service", help="Service to Enable/Disable")
     #parser.add_argument("-v", "--verbose", type = int, help = "Increase output verbosity")
+    subparsers = parser.add_subparsers()
+    # Service List
+    svlist = subparsers.add_parser("list", help="Lists available services")
+    svlist.set_defaults(func=svs.list_services)
+    # Service Enable
+    svenable = subparsers.add_parser("enable", help="Enables services")
+    svenable.add_argument("service")
+    svenable.set_defaults(func=svs.enable_service)
+    #Service Disable
+    svdisable = subparsers.add_parser("disable", help="Disables services")
+    svdisable.add_argument("service")
+    svdisable.set_defaults(func=svs.disable_service)
+    #Parse and execute
     args = parser.parse_args()
+    args.func(args)
+
+if __name__ == "__main__":
 
     # Enter main function
     try:
-        main(args)
+        main()
     except KeyboardInterrupt:
         quit()
 
