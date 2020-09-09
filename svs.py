@@ -26,6 +26,14 @@ class Sv_Switch:
                 services.append(directory)
         return services
 
+    @staticmethod
+    def _list2str(strlist):
+        string = ""
+        for i, item in enumerate(sorted(strlist)):
+            string += item + ", " if i+2 <= len(strlist) else item
+        return string
+
+
     def enable_service(self, args):
         """Creates symlink for selected service"""
         if args.service not in self.services_enabled and args.service in self.services_available:
@@ -46,8 +54,8 @@ class Sv_Switch:
             logging.warning(f"Service {args.service} already Disabled")
 
     def list_services(self, args):
-        print(f"Enabled:  {sorted(self.services_enabled)}")
-        print(f"Disabled: {sorted(self.services_disabled)}")
+        print(f"Enabled:  {self._list2str(self.services_enabled)}")
+        print(f"Disabled: {self._list2str(self.services_disabled)}")
 
 def main():
     svs = Sv_Switch()
