@@ -4,21 +4,22 @@ import os.path
 import argparse
 import logging
 
+from typing import List
 
 class Sv_Switch:
     #PATH_SV = "/etc/sv/"
     #PATH_SERVICE = "/var/service/"
-    # Example Services
+    # Dummy Service location
     PATH_SV = "/tmp/svs/sv/"
     PATH_SERVICE = "/tmp/svs/service/"
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.services_available = self._get_services(self.PATH_SV)
         self.services_enabled = self._get_services(self.PATH_SERVICE)
         self.services_disabled = list(set(self.services_available) - set(self.services_enabled))
 
 
-    def _get_services(self, path):
+    def _get_services(self, path) -> List[str]:
         """Returns a list of directories (that are services) in a chosen path."""
         services = []
         for directory in os.listdir(path):
@@ -27,25 +28,27 @@ class Sv_Switch:
         return services
 
     @staticmethod
-    def _list2str(strlist):
+    def _list2str(strlist) -> str:
+        """Converts a list to a comma seperated string."""
         string = ""
         for i, item in enumerate(sorted(strlist)):
+            # Don't add ", " if last item on list
             string += item + ", " if i+2 <= len(strlist) else item
         return string
 
 
-    def enable_service(self, args):
-        """Creates symlink for selected service"""
+    def enable_service(self, args) -> None:
+        """Creates symlink for selected service."""
         if args.service not in self.services_enabled and args.service in self.services_available:
             os.symlink(self.PATH_SV + args.service, self.PATH_SERVICE + args.service, True)
             logging.debug(f"{args.service} enabled.")
         else:
-            # Service already exists
+            # Service already enabled
             logging.warning(f"Service {args.service} already Enabled!")
 
 
-    def disable_service(self, args):
-        """Removes symlink on selected service"""
+    def disable_service(self, args) -> None:
+        """Removes symlink for selected service."""
         if args.service in self.services_enabled:
             os.unlink(self.PATH_SERVICE + args.service)
             logging.debug(f"{args.service} disabled.")
@@ -53,7 +56,8 @@ class Sv_Switch:
             # Service not enabled
             logging.warning(f"Service {args.service} already Disabled")
 
-    def list_services(self, args):
+    def list_services(self, args) -> None:
+        """Prints a list of all Enabled/Disabled services."""
         print(f"Enabled:  {self._list2str(self.services_enabled)}")
         print(f"Disabled: {self._list2str(self.services_disabled)}")
 
@@ -64,23 +68,26 @@ def main():
     parser = argparse.ArgumentParser()
     #parser.add_argument("-v", "--verbose", type = int, help = "Increase output verbosity")
     subparsers = parser.add_subparsers()
+    
     # Service List
     svlist = subparsers.add_parser("list", help="Lists available services")
     svlist.set_defaults(func=svs.list_services)
+
     # Service Enable
     svenable = subparsers.add_parser("enable", help="Enables services")
     svenable.add_argument("service")
     svenable.set_defaults(func=svs.enable_service)
-    #Service Disable
+
+    # Service Disable
     svdisable = subparsers.add_parser("disable", help="Disables services")
     svdisable.add_argument("service")
     svdisable.set_defaults(func=svs.disable_service)
-    #Parse and execute
+
+    # Parse arguments and execute correct class function
     args = parser.parse_args()
     args.func(args)
 
 if __name__ == "__main__":
-
     # Enter main function
     try:
         main()
