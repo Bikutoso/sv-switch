@@ -41,18 +41,24 @@ class Sv_Switch:
         """Creates symlink for selected service."""
         if args.service not in self.services_enabled and args.service in self.services_available:
             os.symlink(self.PATH_SV + args.service, self.PATH_SERVICE + args.service, True)
-        else:
+        elif args.service in self.services_available:
             # Service already enabled
             sys.exit(f"Service {args.service} already Enabled!")
+        else:
+            # Service does not exist
+            sys.exit(f"Service {args.service} not found")
 
 
     def disable_service(self, args) -> None:
         """Removes symlink for selected service."""
         if args.service in self.services_enabled:
             os.unlink(self.PATH_SERVICE + args.service)
-        else:
+        elif args.service in self.services_available:
             # Service not enabled
             sys.exit(f"Service {args.service} already Disabled!")
+        else:
+            # Service does not exist
+            sys.exit(f"Service {args.service} not found")
 
     def list_services(self, args) -> None:
         """Prints a list of all Enabled/Disabled services."""
