@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import os
 import os.path
+import sys
 import argparse
-import logging
 
 from typing import List
 
@@ -41,20 +41,18 @@ class Sv_Switch:
         """Creates symlink for selected service."""
         if args.service not in self.services_enabled and args.service in self.services_available:
             os.symlink(self.PATH_SV + args.service, self.PATH_SERVICE + args.service, True)
-            logging.debug(f"{args.service} enabled.")
         else:
             # Service already enabled
-            logging.warning(f"Service {args.service} already Enabled!")
+            sys.exit(f"Service {args.service} already Enabled!")
 
 
     def disable_service(self, args) -> None:
         """Removes symlink for selected service."""
         if args.service in self.services_enabled:
             os.unlink(self.PATH_SERVICE + args.service)
-            logging.debug(f"{args.service} disabled.")
         else:
             # Service not enabled
-            logging.warning(f"Service {args.service} already Disabled")
+            sys.exit(f"Service {args.service} already Disabled!")
 
     def list_services(self, args) -> None:
         """Prints a list of all Enabled/Disabled services."""
@@ -66,7 +64,6 @@ def main():
 
     # Argparse Parsing
     parser = argparse.ArgumentParser()
-    #parser.add_argument("-v", "--verbose", type = int, help = "Increase output verbosity")
     subparsers = parser.add_subparsers()
     
     # Service List
@@ -74,12 +71,12 @@ def main():
     svlist.set_defaults(func=svs.list_services)
 
     # Service Enable
-    svenable = subparsers.add_parser("enable", help="Enables services")
+    svenable = subparsers.add_parser("enable", help="Enables service")
     svenable.add_argument("service")
     svenable.set_defaults(func=svs.enable_service)
 
     # Service Disable
-    svdisable = subparsers.add_parser("disable", help="Disables services")
+    svdisable = subparsers.add_parser("disable", help="Disables service")
     svdisable.add_argument("service")
     svdisable.set_defaults(func=svs.disable_service)
 
@@ -92,5 +89,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        quit()
-
+        sys.exit(0)
