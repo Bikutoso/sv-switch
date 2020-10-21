@@ -30,12 +30,7 @@ class Sv_Switch:
     @staticmethod
     def _list2str(strlist) -> str:
         """Converts a list to a comma seperated string."""
-        string = ""
-        for i, item in enumerate(sorted(strlist)):
-            # Don't add ", " if last item on list
-            string += item + ", " if i+2 <= len(strlist) else item
-        return string
-
+        return ", ".join(sorted(strlist))
 
     def enable_service(self, args) -> None:
         """Creates symlink for selected service."""
