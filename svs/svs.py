@@ -60,30 +60,39 @@ class Sv_Switch:
         print(f"Enabled:  {self._list2str(self.services_enabled)}")
         print(f"Disabled: {self._list2str(self.services_disabled)}")
 
+class Argument_Parse():
+    def __init__(self, svs):
+        self.svs = svs
+        self.setup_args()
+
+    def setup_args(self):
+        # Argparse Parsing
+        self.parser = argparse.ArgumentParser()
+        self.subparsers = self.parser.add_subparsers()
+    
+        # Service List
+        self.svlist = self.subparsers.add_parser("list", help="Lists available services")
+        self.svlist.set_defaults(func=self.svs.list_services)
+
+        # Service Enable
+        self.svenable = self.subparsers.add_parser("enable", help="Enables service")
+        self.svenable.add_argument("service")
+        self.svenable.set_defaults(func=self.svs.enable_service)
+
+        # Service Disable
+        self.svdisable = self.subparsers.add_parser("disable", help="Disables service")
+        self.svdisable.add_argument("service")
+        self.svdisable.set_defaults(func=self.svs.disable_service)
+
+    def execute(self):
+        # Parse arguments and execute correct class function
+        self.args = self.parser.parse_args()
+        self.args.func(self.args)
+
 def main():
     svs = Sv_Switch()
-
-    # Argparse Parsing
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
-    
-    # Service List
-    svlist = subparsers.add_parser("list", help="Lists available services")
-    svlist.set_defaults(func=svs.list_services)
-
-    # Service Enable
-    svenable = subparsers.add_parser("enable", help="Enables service")
-    svenable.add_argument("service")
-    svenable.set_defaults(func=svs.enable_service)
-
-    # Service Disable
-    svdisable = subparsers.add_parser("disable", help="Disables service")
-    svdisable.add_argument("service")
-    svdisable.set_defaults(func=svs.disable_service)
-
-    # Parse arguments and execute correct class function
-    args = parser.parse_args()
-    args.func(args)
+    args = Argument_Parse(svs)
+    args.execute()
 
 if __name__ == "__main__":
     # Enter main function
